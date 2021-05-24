@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - materials - car</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				color: #444;
+				background: rgb(255, 255, 255);
+			}
+			a {
+				color: #08f;
+			}
+			.button {
+			background-color: #e6d9d9; /* Green */
+			border: black;
+			color: rgb(0, 0, 0);
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 7px;
+			cursor: pointer;
+			}
+
+			.button2 {background-color: #008CBA;} /* Blue */
+			.button3 {background-color: #f44336;} /* Red */ 
+			.button4 {background-color: #0c7008; color: black;} /* Gray */ 
+			.button5 {background-color: #000000;} /* Black */
+			.button6 {background-color: #470442;} /* Purple */
+			.button7 {background-color: #dfd009;} /* Purple */
+
+			.link1 {
+			background-color: #e6d9d9; /* Green */
+			border: black;
+			color: rgb(0, 0, 0);
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 7px;
+			cursor: pointer;
+			}
+			.link {
+			background-color: #e6d9d9; /* Green */
+			border: black;
+			color: rgb(0, 0, 0);
+			padding: 15px 32px;
+			text-align: center;
+			text-decoration: none;
+			display: inline-block;
+			font-size: 7px;
+			cursor: pointer;
+			}
+		</style>
+	</head>
+
+	<body>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+		<div id="info">
+			<button class="button" id="body-color">Frame color</button>
+			<button class="button button2" id="body-color1" >    </button>
+			<button class="button button3" id="body-color2" ></button>
+			<button class="button button4" id="body-color3" ></button>
+			<button class="button button5" id="body-color4" ></button>
+			<button class="button button6" id="body-color5" ></button>
+			<button class="button button7" id="body-color6" ></button>
+			<button class="link1" data-muffler="Seat_MountainBike">mauntain seat</button>
+			<button class="link1" data-muffler="Seat_RaceBike">racer seat</button>
+			<button class="link" data-mufff="MBF" data-muff="MBB">mountain tires</button>
+			<button class="link" data-mufff="RBF" data-muff="RBB">racer tires</button>
+		</div>
+
+		<div id="container"></div>
+
+		<script type="module">
+
+			import * as THREE from './build/three.module.js';
+
+			import Stats from './stats.module.js';
+
+			import { OrbitControls } from './OrbitControls.js';
+			import { RoomEnvironment } from './RoomEnvironment.js';
+
+			import { GLTFLoader } from './GLTFLoader.js';
+			import { DRACOLoader } from './DRACOLoader.js';
+
+			let camera, scene, renderer;
+			let stats;
+
+			let grid;
+			let controls;
+
+			const wheels = [];
+			const material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+
+			function init() {
+
+				const container = document.getElementById( 'container' );
+
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( render );
+				renderer.outputEncoding = THREE.sRGBEncoding;
+				renderer.toneMapping = THREE.ACESFilmicToneMapping;
+				renderer.toneMappingExposure = 0.85;
+				container.appendChild( renderer.domElement );
+
+				window.addEventListener( 'resize', onWindowResize );
+
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+				//
+
+				camera = new THREE.PerspectiveCamera( 15, window.innerWidth / window.innerHeight, 0.1, 100 );
+				camera.position.set( 3.8, 0.9,  0.5 );
+
+				controls = new OrbitControls( camera, container );
+				controls.target.set( 0, 0.5, 0 );
+				controls.update();
+				
+				const pmremGenerator = new THREE.PMREMGenerator( renderer );
+				
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xeeeeee );
+				scene.environment = pmremGenerator.fromScene( new RoomEnvironment() ).texture;
+				scene.fog = new THREE.Fog( 0xeeeeee, 10, 50 );
+
+				grid = new THREE.GridHelper( 100, 50, 0x000000, 0x000000 );
+				grid.material.opacity = 0.15;
+				grid.material.depthWrite = false;
+				grid.material.transparent = true;
+				scene.add( grid );
+
+				// materials
+
+				const bodyMaterial = new THREE.MeshStandardMaterial( {
+					color: 0x4CAF50, metalness: 1.0, roughness: 0.5
+				} );
+				const bodyMaterial1 = new THREE.MeshStandardMaterial( {
+					color: 0x008CBA, metalness: 1.0, roughness: 0.5
+				} );
+				const bodyMaterial2 = new THREE.MeshStandardMaterial( {
+					color: 0xf44336, metalness: 1.0, roughness: 0.5
+				} );
+				const bodyMaterial3 = new THREE.MeshStandardMaterial( {
+					color: 0x0c7008, metalness: 1.0, roughness: 0.5
+				} );
+				const bodyMaterial4 = new THREE.MeshStandardMaterial( {
+					color: 0x000000, metalness: 1.0, roughness: 0.5
+				} );
+				const bodyMaterial5 = new THREE.MeshStandardMaterial( {
+					color: 0x470442, metalness: 1.0, roughness: 0.5
+				} );
+				const bodyMaterial6 = new THREE.MeshStandardMaterial( {
+					color: 0xdfd009, metalness: 1.0, roughness: 0.5
+				} );
+				const dracoLoader = new DRACOLoader();
+				dracoLoader.setDecoderPath( 'GLTF' );
+
+				const loader = new GLTFLoader();
+				loader.setDRACOLoader( dracoLoader );
+
+				loader.load( 'GLTF/MountainBike_Complete.glb', function ( gltf ) {
+					const carModel = gltf.scene;
+					gltf.scene.rotation.y = -300;
+					console.log(carModel)
+					const original = carModel.getObjectByName( 'SM_BodyFrame' ).material;
+					const button = document.querySelector( '#body-color' );
+					const button1 = document.querySelector( '#body-color1' );
+					const button2 = document.querySelector( '#body-color2' );
+					const button3 = document.querySelector( '#body-color3' );
+					const button4 = document.querySelector( '#body-color4' );
+					const button5 = document.querySelector( '#body-color5' );
+					const button6 = document.querySelector( '#body-color6' );
+					button.addEventListener( 'click', onButtonClick, false );
+					button1.addEventListener( 'click', onButtonClick1, false );
+					button2.addEventListener( 'click', onButtonClick2, false );
+					button3.addEventListener( 'click', onButtonClick3, false );
+					button4.addEventListener( 'click', onButtonClick4, false );
+					button5.addEventListener( 'click', onButtonClick5, false );
+					button6.addEventListener( 'click', onButtonClick6, false );
+					$( ".link1" ).each(function(index) {
+						$(this).on("click", function(){
+
+							var Muffler = gltf.scene.getObjectByName("SM_Seat_Mountain");
+							const parentMuffler = Muffler.parent;
+							parentMuffler.remove( Muffler );
+
+							var chosedMuffler = $(this).data("muffler");
+							console.log(chosedMuffler)
+							loader.load( '/GLTF/' + chosedMuffler + '.glb', function ( gltf1 ) {
+								const car = gltf1.scene;
+								carModel.add(car);
+								console.log(carModel)
+							});
+
+						});
+					});
+					$( ".link" ).each(function(index) {
+						$(this).on("click", function(){
+							var Muff = gltf.scene.getObjectByName("SM_Wheel_Mountain_Front");
+							var Muff2 = gltf.scene.getObjectByName("SM_Wheel_Mountain_Back");
+							const parentMuffler = Muff.parent;
+							const parentMuffler2 = Muff2.parent;
+							parentMuffler.remove( Muff );
+							parentMuffler2.remove( Muff2 );
+							var chosedMuffler = $(this).data("muff");
+							var chosedMuffler2 = $(this).data("mufff");
+							console.log(chosedMuffler)
+							loader.load( '/GLTF/' + chosedMuffler + '.glb', function ( gltf1 ) {
+								const car = gltf1.scene;
+								if (chosedMuffler == "RBB") {
+								wheels.push(car.getObjectByName( 'SM_Wheel_Race_Back' ));
+								} else if (chosedMuffler2 == "MBB") {
+								wheels.push(car.getObjectByName( 'SM_Wheel_Mauntain_Back' ));
+								}
+								carModel.add(car);
+								console.log("overhere")
+								console.log(car)
+							});
+							loader.load( '/GLTF/' + chosedMuffler2 + '.glb', function ( gltf1 ) {
+								const car = gltf1.scene;
+								if (chosedMuffler2 == "RBF") {
+								wheels.push(car.getObjectByName( 'SM_Wheel_Race_Front' ));
+								} else if (chosedMuffler == "MBF") {
+								wheels.push(car.getObjectByName( 'SM_Wheel_Mauntain_Front' ));
+								}
+								carModel.add(car);
+								console.log(carModel)
+							});
+						});
+					});
+
+					wheels.push(
+						carModel.getObjectByName( 'SM_BrakeDiskBack' ),
+						carModel.getObjectByName( 'SM_BodyElements001' ),
+						carModel.getObjectByName( 'SM_Wheel_Mountain_Back' ),
+						carModel.getObjectByName( 'SM_Wheel_Mountain_Front' )
+					);
+
+					function onButtonClick() {
+					carModel.getObjectByName( 'SM_BodyFrame' ).material = original;
+
+					}
+					function onButtonClick1() {
+					carModel.getObjectByName( 'SM_BodyFrame' ).material = bodyMaterial1;
+
+					}
+					function onButtonClick2() {
+					carModel.getObjectByName( 'SM_BodyFrame' ).material = bodyMaterial2;
+
+					}
+					function onButtonClick3() {
+					carModel.getObjectByName( 'SM_BodyFrame' ).material = bodyMaterial3;
+
+					}
+					function onButtonClick4() {
+					carModel.getObjectByName( 'SM_BodyFrame' ).material = bodyMaterial4;
+
+					}
+					function onButtonClick5() {
+					carModel.getObjectByName( 'SM_BodyFrame' ).material = bodyMaterial5;
+
+					}
+					function onButtonClick6() {
+					carModel.getObjectByName( 'SM_BodyFrame' ).material = bodyMaterial6;
+
+					}
+
+					scene.add( carModel );
+					
+				} );
+
+			}
+			
+
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function render() {
+
+				const time = - performance.now() / 1000;
+
+				for ( let i = 0; i < wheels.length; i ++ ) {
+
+					wheels[ i ].rotation.z = time * Math.PI;
+
+				}
+
+				grid.position.z = - ( time ) % 5;
+
+				renderer.render( scene, camera );
+
+				stats.update();
+
+			}
+
+			init();
+
+		</script>
+
+	</body>
+</html>
